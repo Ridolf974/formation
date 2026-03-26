@@ -1,25 +1,30 @@
 let formations = [];
 let nextId = 1;
 
-// --- Formation names memory via localStorage ---
-const NAMES_STORAGE = 'sodia_formation_names';
+// --- Formation memory via localStorage (name + description) ---
+const MEMORY_STORAGE = 'sodia_formation_memory';
 
-function getSavedNames() {
+function getMemory() {
   try {
-    return JSON.parse(localStorage.getItem(NAMES_STORAGE)) || [];
-  } catch { return []; }
+    return JSON.parse(localStorage.getItem(MEMORY_STORAGE)) || {};
+  } catch { return {}; }
 }
 
-function saveFormationName(nom) {
+function saveFormationName(nom, description) {
   if (!nom) return;
-  const names = getSavedNames();
+  const memory = getMemory();
   const upper = nom.trim().toUpperCase();
-  if (!names.includes(upper)) {
-    names.push(upper);
-    names.sort();
-    localStorage.setItem(NAMES_STORAGE, JSON.stringify(names));
+  if (!memory[upper] || description) {
+    memory[upper] = description || memory[upper] || '';
+    localStorage.setItem(MEMORY_STORAGE, JSON.stringify(memory));
     updateDatalist();
   }
+}
+
+function getMemoryDescription(nom) {
+  if (!nom) return '';
+  const memory = getMemory();
+  return memory[nom.trim().toUpperCase()] || '';
 }
 
 function updateDatalist() {
@@ -29,7 +34,22 @@ function updateDatalist() {
     datalist.id = 'formation-names-list';
     document.body.appendChild(datalist);
   }
-  datalist.innerHTML = getSavedNames().map(n => `<option value="${escapeAttr(n)}">`).join('');
+  const names = Object.keys(getMemory()).sort();
+  datalist.innerHTML = names.map(n => `<option value="${escapeAttr(n)}">`).join('');
+}
+
+function onNomChange(id) {
+  const nom = document.getElementById(`nom-${id}`).value.trim();
+  const desc = getMemoryDescription(nom);
+  if (desc) {
+    const textarea = document.getElementById(`desc-${id}`);
+    const hint = document.getElementById(`hint-${id}`);
+    if (!textarea.value) {
+      textarea.value = desc;
+      hint.style.display = 'block';
+      showToast('Description restaurée depuis la mémoire !');
+    }
+  }
 }
 
 // --- API Key management via localStorage ---
@@ -142,7 +162,7 @@ function renderFormations() {
 
       <div class="form-group">
         <label>Nom de la formation <span class="required">*</span></label>
-        <input type="text" id="nom-${f.id}" value="${escapeAttr(f.nom || '')}" placeholder="ex : PLAIES ET CICATRISATION" list="formation-names-list" autocomplete="off" />
+        <input type="text" id="nom-${f.id}" value="${escapeAttr(f.nom || '')}" placeholder="ex : PLAIES ET CICATRISATION" list="formation-names-list" autocomplete="off" onchange="onNomChange(${f.id})" />
       </div>
 
       <div class="form-row">
@@ -243,7 +263,7 @@ async function genererDescription(id) {
     const data = await response.json();
     textarea.value = data.content[0].text.trim();
     hint.style.display = 'block';
-    saveFormationName(nom);
+    saveFormationName(nom, textarea.value);
     showToast('Description générée avec succès !');
   } catch (error) {
     if (error instanceof TypeError && error.message === 'Failed to fetch') {
@@ -433,7 +453,7 @@ function genererPDF() {
 
   addFooter();
 
-  data.forEach(f => saveFormationName(f.nom));
+  data.forEach(f => saveFormationName(f.nom, f.description));
   doc.save('inscriptions-formations-sodia.pdf');
   showToast('PDF téléchargé !');
 }
