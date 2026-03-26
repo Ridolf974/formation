@@ -379,5 +379,8 @@ function showToast(message, isError = false) {
   }, 3000);
 }
 
-// Init with one formation
+// Init
+document.getElementById('btn-config-api').addEventListener('click', function () {
+  showApiKeyModal();
+});
 ajouterFormation();
