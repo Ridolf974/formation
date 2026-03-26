@@ -249,6 +249,11 @@ function genererPDF() {
   const data = collectFormations();
   if (!data || data.length === 0) return;
 
+  if (!window.jspdf) {
+    showToast('Erreur : la librairie PDF ne s\'est pas chargée. Rechargez la page.', true);
+    return;
+  }
+
   const { jsPDF } = window.jspdf;
   const doc = new jsPDF('p', 'mm', 'a4');
   const pageWidth = 210;
