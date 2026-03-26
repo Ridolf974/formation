@@ -180,7 +180,9 @@ async function genererDescription(id) {
   btn.classList.add('loading');
 
   try {
-    const prompt = `Rédige exactement 2 phrases de description professionnelle pour la formation "${nom}".${dates ? ` Date : ${dates}.` : ''}${lieu ? ` Lieu : ${lieu}.` : ''} Maximum 40 mots au total. En français. Réponds uniquement avec les 2 phrases, sans guillemets.`;
+    const prompt = `Tu rédiges une description pour une fiche d'inscription destinée au personnel soignant (infirmiers, aides-soignants, médecins). Formation : "${nom}".${dates ? ` Date : ${dates}.` : ''}${lieu ? ` Lieu : ${lieu}.` : ''}
+
+Écris exactement 2 phrases (40 mots max). La 1ère phrase décrit ce que la formation apporte concrètement dans la pratique quotidienne. La 2ème phrase donne envie de s'inscrire en soulignant le bénéfice pour le soignant et ses patients. Ton professionnel, valorisant, orienté terrain. Tutoie pas. Réponds uniquement avec les 2 phrases.`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
