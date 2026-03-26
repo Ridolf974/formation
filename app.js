@@ -279,46 +279,45 @@ function genererPDF() {
     doc.setFont('helvetica', 'normal');
     doc.text("Feuille d'inscription aux formations", margin, 20);
 
-    y = 38;
+    y = 34;
 
     // Formation title
     doc.setTextColor(124, 58, 237);
-    doc.setFontSize(16);
+    doc.setFontSize(14);
     doc.setFont('helvetica', 'bold');
     const titleLines = doc.splitTextToSize(formation.nom.toUpperCase(), usableWidth);
     doc.text(titleLines, margin, y);
-    y += titleLines.length * 7 + 4;
+    y += titleLines.length * 6 + 2;
 
-    // Info line
-    doc.setTextColor(100, 100, 100);
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    const infoParts = [];
-    if (formation.dates) infoParts.push(`Date(s) : ${formation.dates}`);
-    if (formation.lieu) infoParts.push(`Lieu : ${formation.lieu}`);
-    infoParts.push(`Places : ${formation.places}`);
-    doc.text(infoParts.join('    |    '), margin, y);
-    y += 8;
+    // Date - prominent
+    if (formation.dates) {
+      doc.setTextColor(40, 40, 40);
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'bold');
+      doc.text(formation.dates, margin, y);
+      y += 5;
+    }
+
+    // Lieu
+    if (formation.lieu) {
+      doc.setTextColor(100, 100, 100);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Lieu : ${formation.lieu}`, margin, y);
+      y += 5;
+    }
 
     // Description
     if (formation.description) {
-      doc.setDrawColor(124, 58, 237);
-      doc.setLineWidth(0.5);
-      doc.line(margin, y, margin, y + 2);
-
       doc.setTextColor(60, 60, 60);
-      doc.setFontSize(9.5);
+      doc.setFontSize(8.5);
       doc.setFont('helvetica', 'italic');
-      const descLines = doc.splitTextToSize(formation.description, usableWidth - 6);
-      doc.text(descLines, margin + 4, y + 4);
-      y += descLines.length * 4.5 + 10;
+      const descLines = doc.splitTextToSize(formation.description, usableWidth);
+      doc.text(descLines, margin, y + 1);
+      y += descLines.length * 3.5 + 3;
     }
 
-    // Separator
-    doc.setDrawColor(220, 220, 220);
-    doc.setLineWidth(0.3);
-    doc.line(margin, y, pageWidth - margin, y);
-    y += 8;
+    y += 2;
 
     // Table header
     const colN = 12;
