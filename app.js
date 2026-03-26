@@ -292,29 +292,29 @@ function genererPDF() {
     // Date - prominent
     if (formation.dates) {
       doc.setTextColor(40, 40, 40);
-      doc.setFontSize(11);
+      doc.setFontSize(13);
       doc.setFont('helvetica', 'bold');
       doc.text(formation.dates, margin, y);
-      y += 5;
+      y += 6;
     }
 
     // Lieu
     if (formation.lieu) {
       doc.setTextColor(100, 100, 100);
-      doc.setFontSize(9);
+      doc.setFontSize(12);
       doc.setFont('helvetica', 'normal');
       doc.text(`Lieu : ${formation.lieu}`, margin, y);
-      y += 5;
+      y += 6;
     }
 
     // Description
     if (formation.description) {
       doc.setTextColor(60, 60, 60);
-      doc.setFontSize(8.5);
+      doc.setFontSize(12);
       doc.setFont('helvetica', 'italic');
       const descLines = doc.splitTextToSize(formation.description, usableWidth);
-      doc.text(descLines, margin, y + 1);
-      y += descLines.length * 3.5 + 3;
+      doc.text(descLines, margin, y + 1, { align: 'justify', maxWidth: usableWidth });
+      y += descLines.length * 5 + 3;
     }
 
     y += 2;
