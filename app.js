@@ -180,15 +180,7 @@ async function genererDescription(id) {
   btn.classList.add('loading');
 
   try {
-    const prompt = `Tu es un expert en formation professionnelle. Rédige une description courte et professionnelle (2-3 phrases maximum) pour une formation intitulée "${nom}".${dates ? ` Elle se déroule le ${dates}.` : ''}${lieu ? ` Lieu : ${lieu}.` : ''}
-
-La description doit :
-- Expliquer brièvement les objectifs et le contenu de la formation
-- Être rédigée dans un style professionnel et engageant
-- Être en français
-- Ne pas dépasser 3 phrases
-
-Réponds uniquement avec la description, sans guillemets ni préambule.`;
+    const prompt = `Rédige UNE SEULE phrase de description professionnelle pour la formation "${nom}".${dates ? ` Date : ${dates}.` : ''}${lieu ? ` Lieu : ${lieu}.` : ''} Maximum 30 mots. En français. Réponds uniquement avec la phrase, sans guillemets.`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
