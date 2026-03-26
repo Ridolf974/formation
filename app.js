@@ -261,25 +261,56 @@ function genererPDF() {
   const margin = 18;
   const usableWidth = pageWidth - margin * 2;
 
-  data.forEach((formation, formationIndex) => {
-    if (formationIndex > 0) doc.addPage();
+  const colN = 12;
+  const colNom = 70;
+  const colPrenom = 55;
+  const rowHeight = 9;
+  const footerSpace = 18;
+  const maxY = pageHeight - footerSpace;
 
-    let y = margin;
-
-    // Header bar
+  function addHeader() {
     doc.setFillColor(124, 58, 237);
     doc.rect(0, 0, pageWidth, 28, 'F');
-
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
     doc.text('SODIA', margin, 12);
-
     doc.setFontSize(10);
     doc.setFont('helvetica', 'normal');
     doc.text("Feuille d'inscription aux formations", margin, 20);
+  }
 
-    y = 34;
+  function addFooter() {
+    const footerY = pageHeight - 10;
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.2);
+    doc.line(margin, footerY - 4, pageWidth - margin, footerY - 4);
+    doc.setTextColor(160, 160, 160);
+    doc.setFontSize(7.5);
+    doc.setFont('helvetica', 'normal');
+    doc.text('SODIA - Feuille d\'inscription', margin, footerY);
+  }
+
+  function checkNewPage(needed) {
+    if (y + needed > maxY) {
+      addFooter();
+      doc.addPage();
+      addHeader();
+      y = 34;
+    }
+  }
+
+  let y = margin;
+  addHeader();
+  y = 34;
+
+  data.forEach((formation, formationIndex) => {
+    // Estimate space needed for header info (title + date + lieu + desc + table header + at least 1 row)
+    const minNeeded = 40;
+    if (formationIndex > 0) {
+      checkNewPage(minNeeded);
+      if (y > 36) y += 6;
+    }
 
     // Formation title
     doc.setTextColor(124, 58, 237);
@@ -289,7 +320,7 @@ function genererPDF() {
     doc.text(titleLines, margin, y);
     y += titleLines.length * 6 + 2;
 
-    // Date - prominent
+    // Date
     if (formation.dates) {
       doc.setTextColor(40, 40, 40);
       doc.setFontSize(13);
@@ -320,80 +351,47 @@ function genererPDF() {
     y += 2;
 
     // Table header
-    const colN = 12;
-    const colNom = 70;
-    const colPrenom = 55;
-    const colSignature = usableWidth - colN - colNom - colPrenom;
-    const rowHeight = 9;
-
+    checkNewPage(rowHeight * 2);
     doc.setFillColor(245, 243, 239);
     doc.rect(margin, y, usableWidth, rowHeight, 'F');
-
     doc.setTextColor(80, 80, 80);
     doc.setFontSize(8.5);
     doc.setFont('helvetica', 'bold');
-
     const headerY = y + 6;
     doc.text('N°', margin + 3, headerY);
     doc.text('NOM', margin + colN + 3, headerY);
     doc.text('PRÉNOM', margin + colN + colNom + 3, headerY);
     doc.text('SIGNATURE', margin + colN + colNom + colPrenom + 3, headerY);
-
-    // Header borders
     doc.setDrawColor(200, 200, 200);
     doc.setLineWidth(0.2);
     doc.rect(margin, y, usableWidth, rowHeight);
     doc.line(margin + colN, y, margin + colN, y + rowHeight);
     doc.line(margin + colN + colNom, y, margin + colN + colNom, y + rowHeight);
     doc.line(margin + colN + colNom + colPrenom, y, margin + colN + colNom + colPrenom, y + rowHeight);
-
     y += rowHeight;
 
     // Rows
-    const maxRows = Math.min(formation.places, Math.floor((pageHeight - y - 25) / rowHeight));
-
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(9);
-
-    for (let i = 0; i < maxRows; i++) {
-      const rowY = y + i * rowHeight;
-      const textY = rowY + 6;
-
+    for (let i = 0; i < formation.places; i++) {
+      checkNewPage(rowHeight);
       if (i % 2 === 0) {
         doc.setFillColor(252, 252, 252);
-        doc.rect(margin, rowY, usableWidth, rowHeight, 'F');
+        doc.rect(margin, y, usableWidth, rowHeight, 'F');
       }
-
       doc.setDrawColor(220, 220, 220);
       doc.setLineWidth(0.15);
-      doc.rect(margin, rowY, usableWidth, rowHeight);
-      doc.line(margin + colN, rowY, margin + colN, rowY + rowHeight);
-      doc.line(margin + colN + colNom, rowY, margin + colN + colNom, rowY + rowHeight);
-      doc.line(
-        margin + colN + colNom + colPrenom,
-        rowY,
-        margin + colN + colNom + colPrenom,
-        rowY + rowHeight
-      );
-
+      doc.rect(margin, y, usableWidth, rowHeight);
+      doc.line(margin + colN, y, margin + colN, y + rowHeight);
+      doc.line(margin + colN + colNom, y, margin + colN + colNom, y + rowHeight);
+      doc.line(margin + colN + colNom + colPrenom, y, margin + colN + colNom + colPrenom, y + rowHeight);
       doc.setTextColor(150, 150, 150);
-      doc.text(String(i + 1), margin + 3, textY);
+      doc.text(String(i + 1), margin + 3, y + 6);
+      y += rowHeight;
     }
-
-    // Footer
-    const footerY = pageHeight - 12;
-    doc.setDrawColor(200, 200, 200);
-    doc.setLineWidth(0.2);
-    doc.line(margin, footerY - 4, pageWidth - margin, footerY - 4);
-
-    doc.setTextColor(160, 160, 160);
-    doc.setFontSize(7.5);
-    doc.setFont('helvetica', 'normal');
-    doc.text('SODIA - Feuille d\'inscription', margin, footerY);
-    doc.text(`Page ${formationIndex + 1} / ${data.length}`, pageWidth - margin, footerY, {
-      align: 'right',
-    });
   });
+
+  addFooter();
 
   doc.save('inscriptions-formations-sodia.pdf');
   showToast('PDF téléchargé !');
