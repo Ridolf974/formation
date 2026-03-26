@@ -180,7 +180,7 @@ async function genererDescription(id) {
   btn.classList.add('loading');
 
   try {
-    const prompt = `Rédige UNE SEULE phrase de description professionnelle pour la formation "${nom}".${dates ? ` Date : ${dates}.` : ''}${lieu ? ` Lieu : ${lieu}.` : ''} Maximum 30 mots. En français. Réponds uniquement avec la phrase, sans guillemets.`;
+    const prompt = `Rédige exactement 2 phrases de description professionnelle pour la formation "${nom}".${dates ? ` Date : ${dates}.` : ''}${lieu ? ` Lieu : ${lieu}.` : ''} Maximum 40 mots au total. En français. Réponds uniquement avec les 2 phrases, sans guillemets.`;
 
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
