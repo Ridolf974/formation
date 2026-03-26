@@ -86,17 +86,21 @@ async function genererDescription(id) {
       body: JSON.stringify({ nom, dates, lieu }),
     });
 
-    const data = await response.json();
-
     if (!response.ok) {
+      const data = await response.json().catch(() => ({}));
       throw new Error(data.error || 'Erreur serveur');
     }
 
+    const data = await response.json();
     textarea.value = data.description;
     hint.style.display = 'block';
     showToast('Description générée avec succès !');
   } catch (error) {
-    showToast(error.message, true);
+    if (error instanceof TypeError && error.message === 'Failed to fetch') {
+      showToast('Génération IA indisponible (serveur local requis). Saisissez la description manuellement.', true);
+    } else {
+      showToast(error.message, true);
+    }
   } finally {
     btn.textContent = 'Générer';
     btn.disabled = false;
