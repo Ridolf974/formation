@@ -1,6 +1,71 @@
 let formations = [];
 let nextId = 1;
 
+// --- API Key management via localStorage ---
+const API_KEY_STORAGE = 'sodia_anthropic_api_key';
+
+function getApiKey() {
+  return localStorage.getItem(API_KEY_STORAGE);
+}
+
+function saveApiKey(key) {
+  localStorage.setItem(API_KEY_STORAGE, key);
+}
+
+function clearApiKey() {
+  localStorage.removeItem(API_KEY_STORAGE);
+}
+
+function showApiKeyModal(onSuccess) {
+  // Remove existing modal if any
+  const existing = document.getElementById('apikey-modal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'apikey-modal';
+  modal.className = 'modal-overlay';
+  modal.innerHTML = `
+    <div class="modal-content">
+      <h3>Configuration de la clé API</h3>
+      <p>Pour générer des descriptions avec l'IA, veuillez saisir votre clé API Anthropic.</p>
+      <p class="modal-hint">La clé sera sauvegardée dans votre navigateur et ne sera plus demandée.</p>
+      <input type="password" id="apikey-input" placeholder="sk-ant-..." autocomplete="off" />
+      <div class="modal-error" id="apikey-error" style="display:none;"></div>
+      <div class="modal-actions">
+        <button class="btn btn-cancel" id="apikey-cancel">Annuler</button>
+        <button class="btn btn-confirm" id="apikey-confirm">Valider</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(modal);
+
+  const input = document.getElementById('apikey-input');
+  const errorEl = document.getElementById('apikey-error');
+  input.focus();
+
+  document.getElementById('apikey-confirm').addEventListener('click', () => {
+    const key = input.value.trim();
+    if (!key) {
+      errorEl.textContent = 'Veuillez saisir une clé API.';
+      errorEl.style.display = 'block';
+      return;
+    }
+    saveApiKey(key);
+    modal.remove();
+    if (onSuccess) onSuccess(key);
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') document.getElementById('apikey-confirm').click();
+  });
+
+  document.getElementById('apikey-cancel').addEventListener('click', () => {
+    modal.remove();
+  });
+}
+
+// --- Formations ---
+
 function ajouterFormation() {
   const id = nextId++;
   formations.push({ id });
@@ -62,10 +127,21 @@ function renderFormations() {
     .join('');
 }
 
+// --- AI Description ---
+
 async function genererDescription(id) {
   const nom = document.getElementById(`nom-${id}`).value.trim();
   if (!nom) {
     showToast('Veuillez saisir le nom de la formation.', true);
+    return;
+  }
+
+  let apiKey = getApiKey();
+  if (!apiKey) {
+    showApiKeyModal((key) => {
+      // Retry after key is entered
+      genererDescription(id);
+    });
     return;
   }
 
@@ -83,11 +159,16 @@ async function genererDescription(id) {
     const response = await fetch('/api/generate-description', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nom, dates, lieu }),
+      body: JSON.stringify({ nom, dates, lieu, apiKey }),
     });
 
     if (!response.ok) {
       const data = await response.json().catch(() => ({}));
+      if (response.status === 401) {
+        clearApiKey();
+        showToast('Clé API invalide. Veuillez la ressaisir.', true);
+        return;
+      }
       throw new Error(data.error || 'Erreur serveur');
     }
 
@@ -107,6 +188,8 @@ async function genererDescription(id) {
     btn.classList.remove('loading');
   }
 }
+
+// --- Collect & PDF ---
 
 function collectFormations() {
   const result = [];
@@ -276,6 +359,8 @@ function genererPDF() {
   doc.save('inscriptions-formations-sodia.pdf');
   showToast('PDF téléchargé !');
 }
+
+// --- Toast ---
 
 function showToast(message, isError = false) {
   const existing = document.querySelector('.toast');
