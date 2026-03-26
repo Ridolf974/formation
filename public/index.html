@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SODIA - Formulaire d'inscription aux formations</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.2/jspdf.umd.min.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <img src="logo-sodia.png" alt="SODIA" class="logo" onerror="this.style.display='none'; document.getElementById('logo-text').style.display='block';">
+      <h1 id="logo-text" style="display:none;">SODIA</h1>
+      <h2>Formulaire d'inscription aux formations</h2>
+    </header>
+
+    <div id="formations-container"></div>
+
+    <div class="actions">
+      <button type="button" class="btn btn-add" onclick="ajouterFormation()">+ Ajouter une formation</button>
+      <button type="button" class="btn btn-pdf" onclick="genererPDF()">Générer le PDF &#x2197;</button>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

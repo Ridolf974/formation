@@ -1,0 +1,14 @@
+{
+  "name": "formation-sodia",
+  "version": "1.0.0",
+  "description": "Formulaire de formation SODIA avec generation IA et PDF",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.52.0",
+    "express": "^4.21.0"
+  }
+}
