@@ -272,7 +272,7 @@ function genererPDF() {
 
   function addHeader() {
     doc.setFillColor(124, 58, 237);
-    doc.rect(0, 0, pageWidth, 32, 'F');
+    doc.rect(0, 0, pageWidth, 28, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
@@ -280,9 +280,6 @@ function genererPDF() {
     doc.setFontSize(12);
     doc.setFont('helvetica', 'bold');
     doc.text('INSCRIVEZ-VOUS AUX FORMATIONS A VENIR', margin, 22);
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    doc.text('Cochez, complétez et retournez cette feuille à votre responsable.', margin, 29);
   }
 
   function addFooter() {
