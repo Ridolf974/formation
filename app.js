@@ -311,7 +311,13 @@ function genererPDF() {
     const minNeeded = 40;
     if (formationIndex > 0) {
       checkNewPage(minNeeded);
-      if (y > 36) y += 6;
+      if (y > 36) {
+        // Separator line between formations
+        doc.setDrawColor(180, 180, 180);
+        doc.setLineWidth(0.3);
+        doc.line(margin + 20, y + 3, pageWidth - margin - 20, y + 3);
+        y += 10;
+      }
     }
 
     // Formation title
