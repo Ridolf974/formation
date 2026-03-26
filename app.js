@@ -66,13 +66,29 @@ function showApiKeyModal(onSuccess) {
 
 // --- Formations ---
 
+function saveFormationValues() {
+  for (const f of formations) {
+    const nomEl = document.getElementById(`nom-${f.id}`);
+    if (nomEl) {
+      f.nom = nomEl.value;
+      f.dates = document.getElementById(`dates-${f.id}`).value;
+      f.lieu = document.getElementById(`lieu-${f.id}`).value;
+      f.places = document.getElementById(`places-${f.id}`).value;
+      f.description = document.getElementById(`desc-${f.id}`).value;
+      f.hintVisible = document.getElementById(`hint-${f.id}`).style.display !== 'none';
+    }
+  }
+}
+
 function ajouterFormation() {
+  saveFormationValues();
   const id = nextId++;
-  formations.push({ id });
+  formations.push({ id, nom: '', dates: '', lieu: '', places: '10', description: '', hintVisible: false });
   renderFormations();
 }
 
 function supprimerFormation(id) {
+  saveFormationValues();
   formations = formations.filter((f) => f.id !== id);
   renderFormations();
 }
@@ -95,36 +111,44 @@ function renderFormations() {
 
       <div class="form-group">
         <label>Nom de la formation <span class="required">*</span></label>
-        <input type="text" id="nom-${f.id}" placeholder="ex : PLAIES ET CICATRISATION" />
+        <input type="text" id="nom-${f.id}" value="${escapeAttr(f.nom || '')}" placeholder="ex : PLAIES ET CICATRISATION" />
       </div>
 
       <div class="form-row">
         <div class="form-group">
           <label>Date(s)</label>
-          <input type="text" id="dates-${f.id}" placeholder="ex : 13/04/26 au 14/04/26" />
+          <input type="text" id="dates-${f.id}" value="${escapeAttr(f.dates || '')}" placeholder="ex : 13/04/26 au 14/04/26" />
         </div>
         <div class="form-group">
           <label>Lieu</label>
-          <input type="text" id="lieu-${f.id}" placeholder="ex : Salle de réunion A" />
+          <input type="text" id="lieu-${f.id}" value="${escapeAttr(f.lieu || '')}" placeholder="ex : Salle de réunion A" />
         </div>
         <div class="form-group">
           <label>Nombre de places <span class="required">*</span></label>
-          <input type="number" id="places-${f.id}" min="1" value="10" />
+          <input type="number" id="places-${f.id}" min="1" value="${escapeAttr(f.places || '10')}" />
         </div>
       </div>
 
       <div class="form-group description-section">
         <label>Description courte</label>
         <div class="description-wrapper">
-          <textarea id="desc-${f.id}" placeholder="Cliquez sur Générer pour créer une description automatique..."></textarea>
+          <textarea id="desc-${f.id}" placeholder="Cliquez sur Générer pour créer une description automatique...">${escapeHtml(f.description || '')}</textarea>
           <button class="btn-generate" onclick="genererDescription(${f.id})" id="btn-gen-${f.id}">Générer</button>
         </div>
-        <div class="description-hint" id="hint-${f.id}" style="display:none;">Description pré-remplie &mdash; modifiable.</div>
+        <div class="description-hint" id="hint-${f.id}" style="display:${f.hintVisible ? 'block' : 'none'};">Description pré-remplie &mdash; modifiable.</div>
       </div>
     </div>
   `
     )
     .join('');
+}
+
+function escapeAttr(str) {
+  return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+}
+
+function escapeHtml(str) {
+  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
 // --- AI Description ---
