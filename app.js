@@ -156,29 +156,48 @@ async function genererDescription(id) {
   btn.classList.add('loading');
 
   try {
-    const response = await fetch('/api/generate-description', {
+    const prompt = `Tu es un expert en formation professionnelle. Rédige une description courte et professionnelle (2-3 phrases maximum) pour une formation intitulée "${nom}".${dates ? ` Elle se déroule le ${dates}.` : ''}${lieu ? ` Lieu : ${lieu}.` : ''}
+
+La description doit :
+- Expliquer brièvement les objectifs et le contenu de la formation
+- Être rédigée dans un style professionnel et engageant
+- Être en français
+- Ne pas dépasser 3 phrases
+
+Réponds uniquement avec la description, sans guillemets ni préambule.`;
+
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ nom, dates, lieu, apiKey }),
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true',
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 300,
+        messages: [{ role: 'user', content: prompt }],
+      }),
     });
 
     if (!response.ok) {
-      const data = await response.json().catch(() => ({}));
       if (response.status === 401) {
         clearApiKey();
         showToast('Clé API invalide. Veuillez la ressaisir.', true);
         return;
       }
-      throw new Error(data.error || 'Erreur serveur');
+      const data = await response.json().catch(() => ({}));
+      throw new Error(data.error?.message || 'Erreur API');
     }
 
     const data = await response.json();
-    textarea.value = data.description;
+    textarea.value = data.content[0].text.trim();
     hint.style.display = 'block';
     showToast('Description générée avec succès !');
   } catch (error) {
     if (error instanceof TypeError && error.message === 'Failed to fetch') {
-      showToast('Génération IA indisponible (serveur local requis). Saisissez la description manuellement.', true);
+      showToast('Erreur réseau. Vérifiez votre connexion.', true);
     } else {
       showToast(error.message, true);
     }
