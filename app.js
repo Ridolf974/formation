@@ -1,6 +1,37 @@
 let formations = [];
 let nextId = 1;
 
+// --- Formation names memory via localStorage ---
+const NAMES_STORAGE = 'sodia_formation_names';
+
+function getSavedNames() {
+  try {
+    return JSON.parse(localStorage.getItem(NAMES_STORAGE)) || [];
+  } catch { return []; }
+}
+
+function saveFormationName(nom) {
+  if (!nom) return;
+  const names = getSavedNames();
+  const upper = nom.trim().toUpperCase();
+  if (!names.includes(upper)) {
+    names.push(upper);
+    names.sort();
+    localStorage.setItem(NAMES_STORAGE, JSON.stringify(names));
+    updateDatalist();
+  }
+}
+
+function updateDatalist() {
+  let datalist = document.getElementById('formation-names-list');
+  if (!datalist) {
+    datalist = document.createElement('datalist');
+    datalist.id = 'formation-names-list';
+    document.body.appendChild(datalist);
+  }
+  datalist.innerHTML = getSavedNames().map(n => `<option value="${escapeAttr(n)}">`).join('');
+}
+
 // --- API Key management via localStorage ---
 const API_KEY_STORAGE = 'sodia_anthropic_api_key';
 
@@ -111,7 +142,7 @@ function renderFormations() {
 
       <div class="form-group">
         <label>Nom de la formation <span class="required">*</span></label>
-        <input type="text" id="nom-${f.id}" value="${escapeAttr(f.nom || '')}" placeholder="ex : PLAIES ET CICATRISATION" />
+        <input type="text" id="nom-${f.id}" value="${escapeAttr(f.nom || '')}" placeholder="ex : PLAIES ET CICATRISATION" list="formation-names-list" autocomplete="off" />
       </div>
 
       <div class="form-row">
@@ -212,6 +243,7 @@ async function genererDescription(id) {
     const data = await response.json();
     textarea.value = data.content[0].text.trim();
     hint.style.display = 'block';
+    saveFormationName(nom);
     showToast('Description générée avec succès !');
   } catch (error) {
     if (error instanceof TypeError && error.message === 'Failed to fetch') {
@@ -401,6 +433,7 @@ function genererPDF() {
 
   addFooter();
 
+  data.forEach(f => saveFormationName(f.nom));
   doc.save('inscriptions-formations-sodia.pdf');
   showToast('PDF téléchargé !');
 }
@@ -428,4 +461,5 @@ function showToast(message, isError = false) {
 document.getElementById('btn-config-api').addEventListener('click', function () {
   showApiKeyModal();
 });
+updateDatalist();
 ajouterFormation();
