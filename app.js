@@ -272,14 +272,17 @@ function genererPDF() {
 
   function addHeader() {
     doc.setFillColor(124, 58, 237);
-    doc.rect(0, 0, pageWidth, 28, 'F');
+    doc.rect(0, 0, pageWidth, 32, 'F');
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(18);
     doc.setFont('helvetica', 'bold');
     doc.text('SODIA', margin, 12);
-    doc.setFontSize(10);
+    doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
+    doc.text('INSCRIVEZ-VOUS AUX FORMATIONS A VENIR', margin, 22);
+    doc.setFontSize(9);
     doc.setFont('helvetica', 'normal');
-    doc.text("Feuille d'inscription aux formations", margin, 20);
+    doc.text('Cochez, complétez et retournez cette feuille à votre responsable.', margin, 29);
   }
 
   function addFooter() {
@@ -298,13 +301,13 @@ function genererPDF() {
       addFooter();
       doc.addPage();
       addHeader();
-      y = 34;
+      y = 38;
     }
   }
 
   let y = margin;
   addHeader();
-  y = 34;
+  y = 38;
 
   data.forEach((formation, formationIndex) => {
     // Estimate space needed for header info (title + date + lieu + desc + table header + at least 1 row)
